@@ -49,7 +49,9 @@ target_link_libraries(listSelect_lib
 add_executable(listSelect_exe
    src/main.cpp
 )
-
+target_link_libraries(listSelect_exe
+   PRIVATE ftxui::component
+)
 set_property(TARGET listSelect_exe
    PROPERTY OUTPUT_NAME lSel
 )
