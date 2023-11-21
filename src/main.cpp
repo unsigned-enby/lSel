@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
    bool* states = nullptr;
    auto container = listSelect(myVec, states, negate, size);
    container = CatchEvent(container, [&](Event event) {
-         if(event == Event::F1) {
+         if(event == Event::F1 || event == Event::Character('y')) {
             screen.Exit();
             return true;
          }

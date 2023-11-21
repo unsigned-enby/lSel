@@ -25,6 +25,8 @@ described there, lSel supports reading args from both the command-line and stdin
 the `--file` option, that the resulting selections will be sent to both the given
 file and to stdout. So, if you want to simply output to a file,
 use your shell's redirection operators (e.g `>/>>` for bash).
+- Selections are made by either pressing `Enter` or `Space`.
+- Once you have made your selection, you may use either `F1`, `Control-c`, or `y` to continue.
 
 ## Notes
 I beleive this should work on both windows and linux, but I have, as of yet, only tested it
