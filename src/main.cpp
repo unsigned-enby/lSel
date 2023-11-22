@@ -24,6 +24,7 @@ void Help() {
              << " -[-f]ile  <file> : Send output to both <file> and stdout.\n"
              << " -[-a]ppend       : Append to aformentioned <file> (default is to overwrite).\n"
              << " -[-h]elp         : Show this help.\n";
+   exit(0);
 }
 char expand(char* str) {
    if(str[0] != '\\')

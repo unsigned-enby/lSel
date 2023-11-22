@@ -12,7 +12,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 ```
 from the project's root directory.
-Optionally, you may use `-DLSEL_STATIC=1` to creat a static binary. However,
+Optionally, you may use `-DLSEL_STATIC=1` to create a static binary. However,
 please not that the TUI library FTXUI will be statically compiled either way.
 
 ## Install
@@ -29,8 +29,8 @@ use your shell's redirection operators (e.g `>/>>` for bash).
 - Once you have made your selection, you may use either `F1`, `Control-c`, or `y` to continue.
 
 ## Notes
-I beleive this should work on both windows and linux, but I have, as of yet, only tested it
-on linux. PLEASE NOTE I DO NOT GURANTEE THIS WILL OPERATE CORRECTLY ON YOUR SYSTEM. 
-So before sending output to a file you do not want accidently overriden, please test
+I believe this should work on both windows and Linux, but I have, as of yet, only tested it
+on Linux. PLEASE NOTE I DO NOT GUARANTEE THIS WILL OPERATE CORRECTLY ON YOUR SYSTEM. 
+So before sending output to a file you do not want accidentally overridden, please test
 it out to make sure it works as you expect. Should you notice any issues, you can
 (and are encouraged to) let me know and I'll fix it as soon as I am able.
