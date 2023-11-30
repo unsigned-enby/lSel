@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
    int append = false;
    int idx    = false;
    int hiden  = false; 
+   int max    = -1;
    int size   = 10;
    char delim = '\n'; //*output* delimiter
    string outFile = "";
@@ -92,6 +93,7 @@ int main(int argc, char* argv[]) {
       {"append", no_argument,       &append,  1 },
       {"idx",    no_argument,       &idx,     1 },
       {"hiden",  no_argument,       &hiden,   1 },
+      {"max",    required_argument, nullptr, 'm'},
       {"size",   required_argument, nullptr, 's'},
       {"file",   required_argument, nullptr, 'f'},
       {"delim",  required_argument, nullptr, 'd'},
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]) {
       {0, 0, 0, 0}
    };
    int ret;
-   while((ret = getopt_long(argc, argv, "naihs:f:d:l::", options, NULL)) != -1) {
+   while((ret = getopt_long(argc, argv, "naihm:s:f:d:l::", options, NULL)) != -1) {
       switch(ret) {
          case 'n':
             negate = 1;
@@ -113,6 +115,9 @@ int main(int argc, char* argv[]) {
             break;   //         not the selectiions themselves
          case 'h':
             hiden = true;
+            break;
+         case 'm':
+            max = atoi(optarg);
             break;
          case 's':
             size = atoi(optarg);
@@ -154,7 +159,7 @@ int main(int argc, char* argv[]) {
    
    //main loop
    bool* states = nullptr;
-   auto container = listSelect(myVec, states, negate, size);
+   auto container = listSelect(myVec, states, max, negate, size);
    container = CatchEvent(container, [&](Event event) {
          if(event == Event::F1 || event == Event::Character('y')) {
             screen.Exit();

@@ -12,7 +12,7 @@ option(LSEL_STATIC "Create a static binary" OFF)
 option(SYSTEM_FTXUI "Use ftxui libraries found on system" OFF)
 
 
-if(SYS_FTXUI)
+if(SYSTEM_FTXUI)
    find_package(ftxui)
 else()
    set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
