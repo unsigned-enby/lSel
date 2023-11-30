@@ -1,16 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
-FetchContent_Declare(ftxui
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG v5.0.0
-)
-FetchContent_GetProperties(ftxui)
-if(NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
 
 project(
     listSelect
@@ -19,10 +8,29 @@ project(
     HOMEPAGE_URL "https://example.com/"
     LANGUAGES CXX
 )
+option(LSEL_STATIC "Create a static binary" OFF)
+option(SYSTEM_FTXUI "Use ftxui libraries found on system" OFF)
+
+
+if(SYS_FTXUI)
+   find_package(ftxui)
+else()
+   set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
+   FetchContent_Declare(ftxui
+     GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+     GIT_TAG v5.0.0
+   )
+   FetchContent_GetProperties(ftxui)
+   if(NOT ftxui_POPULATED)
+     FetchContent_Populate(ftxui)
+     add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
+   endif()
+endif()
+
+
 
 # ---- Declare library ----
 
-option(LSEL_STATIC "Create a static binary" OFF)
 add_library(listSelect_lib
     src/ListSelect.cpp
     src/ListSelect.hpp

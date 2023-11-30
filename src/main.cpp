@@ -19,11 +19,12 @@ void Help() {
              << " -[-l]ist [dir]   : use directory given by [dir] (or cwd if [dir] is not given)\n"
              << "                    for the list of possible choices. The path will be prepended\n"
              << "                    to the selected items.\n"
+             << " -[-h]iden        : when listing files, list all files. including those starting with '.'\n"
              << " -[-s]ize  <size> : Display no more than <size> lines at a time (default is 10).\n"
              << " -[-d]elim <delim>: Use <delim> as the output delimiter (default is '\\n')\n"
              << " -[-f]ile  <file> : Send output to both <file> and stdout.\n"
              << " -[-a]ppend       : Append to aformentioned <file> (default is to overwrite).\n"
-             << " -[-h]elp         : Show this help.\n";
+             << " --help           : Show this help.\n";
    exit(0);
 }
 char expand(char* str) {
@@ -64,20 +65,23 @@ vector<string> stdIn() {
 #endif
    return retVec;
 }
-vector<string> listDir(string path) {
+vector<string> listDir(string path, bool showHidden) {
    vector<string> retVec;
    const std::filesystem::path dir(path);
    for(const auto &dir_entry : std::filesystem::directory_iterator(dir)) {
       retVec.push_back(dir_entry.path().filename().string());
+      if(!showHidden && retVec.back()[0] == '.')
+         retVec.pop_back();
    }
    std::sort(retVec.begin(), retVec.end());
    return retVec;
 }
 int main(int argc, char* argv[]) {
    auto screen = ScreenInteractive::FitComponent();
-   int negate = 0;
-   int append = 0;
-   int idx    = 0;
+   int negate = false;
+   int append = false;
+   int idx    = false;
+   int hiden  = false; 
    int size   = 10;
    char delim = '\n'; //*output* delimiter
    string outFile = "";
@@ -87,15 +91,16 @@ int main(int argc, char* argv[]) {
       {"negate", no_argument,       &negate,  1 },
       {"append", no_argument,       &append,  1 },
       {"idx",    no_argument,       &idx,     1 },
+      {"hiden",  no_argument,       &hiden,   1 },
       {"size",   required_argument, nullptr, 's'},
       {"file",   required_argument, nullptr, 'f'},
       {"delim",  required_argument, nullptr, 'd'},
       {"list",   optional_argument, nullptr, 'l'},
-      {"help",   no_argument,       nullptr, 'h'},
+      {"help",   no_argument,       nullptr, 'H'},
       {0, 0, 0, 0}
    };
    int ret;
-   while((ret = getopt_long(argc, argv, "nais:f:d:l::h", options, NULL)) != -1) {
+   while((ret = getopt_long(argc, argv, "naihs:f:d:l::", options, NULL)) != -1) {
       switch(ret) {
          case 'n':
             negate = 1;
@@ -104,8 +109,11 @@ int main(int argc, char* argv[]) {
             append = 1;
             break;
          case 'i':
-            idx = 1; //boolean; if(idx), print the index, 
-            break;   //not the selection itself
+            idx = 1; //boolean; if(idx), print the indicies, 
+            break;   //         not the selectiions themselves
+         case 'h':
+            hiden = true;
+            break;
          case 's':
             size = atoi(optarg);
             break;
@@ -121,14 +129,13 @@ int main(int argc, char* argv[]) {
             } else if (optind == argc || argv[optind][0] == '-') {
                rootDir = "./";
             } else {
-               rootDir = argv[optind];
-               optind++;
+               rootDir = argv[optind++];
             }
             break;
-         case 'h':
+         case 'H':
             Help();
             break;
-         default:
+         case '?':
             std::cerr << "Error proccessing options, exiting now!\n";
             exit(-1);
             break;
@@ -137,7 +144,7 @@ int main(int argc, char* argv[]) {
    if(optind != argc)
       myVec.assign(&argv[optind], &argv[argc]);
    else if(!rootDir.empty())
-      myVec = listDir(rootDir);
+      myVec = listDir(rootDir, hiden);
    else 
       myVec = stdIn();
    
