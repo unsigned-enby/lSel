@@ -29,6 +29,33 @@ file and to stdout. So, if you want to simply output to a file,
 use your shell's redirection operators (e.g `>/>>` for bash).
 - Selections are made by either pressing `Enter` or `Space`.
 - Once you have made your selection, you may use either `F1`, `Control-c`, or `y` to continue.
+- When specifying a(n output) delimiter with `-d`, the following escape characters will be recognized (if quoted):
+   - `\n`: newline
+   - `\t`: tab 
+   - `\v`: vertical tab
+   - `\r`: return
+   - `\0`: null byte
+  If for some reason you need an escaped char that is not listed above as the output delimiter, then
+  (at least, if you're using bash), may use the following syntax (with newline being used as an example)
+  ```
+  lSel -d $'\n'
+  ```
+## Further examples
+Use `--list [dir]` option and xargs to delete selected items:
+```
+lSel -l | xargs rm -rf
+```
+Use `--list [dir]` option and xargs to move selected items:
+```
+lSel -l | xargs -I{} mv {} <newDir>
+```
+Open a file with vim after making a single selection:
+```
+lvim() {
+   vim "$(lSel -l -m1)"
+}
+lvim
+```
 
 ## Notes
 I believe this should work on both windows and Linux, but I have, as of yet, only tested it

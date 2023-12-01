@@ -19,7 +19,7 @@ void Help() {
              << " -[-l]ist [dir]   : use directory given by [dir] (or cwd if [dir] is not given)\n"
              << "                    for the list of possible choices. The path will be prepended\n"
              << "                    to the selected items.\n"
-             << " -[-h]idden       : when listing files, list all files. including those starting with '.'\n"
+             << " -[-h]iden        : when listing files, list all files. including those starting with '.'\n"
              << " -[-m]ax   <max>  : automatically exit after making <max> selections.\n"
              << " -[-s]ize  <size> : Display no more than <size> lines at a time (default is 10).\n"
              << " -[-d]elim <delim>: Use <delim> as the output delimiter (default is '\\n')\n"
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
    int negate = false;
    int append = false;
    int idx    = false;
-   int hidden  = false; 
+   int hiden  = false; 
    int max    = -1;
    int size   = 10;
    char delim = '\n'; //*output* delimiter
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
       {"negate", no_argument,       &negate,  1 },
       {"append", no_argument,       &append,  1 },
       {"idx",    no_argument,       &idx,     1 },
-      {"hidden", no_argument,       &hidden,  1 },
+      {"hiden",  no_argument,       &hiden,   1 },
       {"max",    required_argument, nullptr, 'm'},
       {"size",   required_argument, nullptr, 's'},
       {"file",   required_argument, nullptr, 'f'},
@@ -112,10 +112,10 @@ int main(int argc, char* argv[]) {
             append = 1;
             break;
          case 'i':
-            idx = 1; //boolean; if(idx), print the indices, 
-            break;   //         not the selections themselves
+            idx = 1; //boolean; if(idx), print the indicies, 
+            break;   //         not the selectiions themselves
          case 'h':
-            hidden = true;
+            hiden = true;
             break;
          case 'm':
             max = atoi(optarg);
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
             Help();
             break;
          case '?':
-            std::cerr << "Error processing options, exiting now!\n";
+            std::cerr << "Error proccessing options, exiting now!\n";
             exit(-1);
             break;
       }
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
    if(optind != argc)
       myVec.assign(&argv[optind], &argv[argc]);
    else if(!rootDir.empty())
-      myVec = listDir(rootDir, hidden);
+      myVec = listDir(rootDir, hiden);
    else 
       myVec = stdIn();
    
@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
    screen.Loop(container);
  
    
-   ///process selections
+   ///proccess selections
    
    ///Append '/' to path (if needed) and 
    ///prepend path to each selection if path is not empty
