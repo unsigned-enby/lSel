@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 include(FetchContent)
 
 project(
-    listSelect
+    lSel
     VERSION 0.1.0
     DESCRIPTION "Short description"
     HOMEPAGE_URL "https://example.com/"
@@ -31,45 +31,43 @@ endif()
 
 # ---- Declare library ----
 
-add_library(listSelect_lib
-    src/ListSelect.cpp
-    src/ListSelect.hpp
+add_library(listToggle_lib
+    src/ListToggle.cpp
+    src/ListToggle.hpp
 )
 
 target_include_directories(
-    listSelect_lib ${warning_guard}
+    listToggle_lib ${warning_guard}
     PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/source>"
 )
 
-target_compile_features(listSelect_lib PUBLIC cxx_std_20)
+target_compile_features(listToggle_lib PUBLIC cxx_std_20)
 if(LSEL_STATIC)
    set(CMAKE_CXX_FLAGS "-static")
 endif()
 
-target_link_libraries(listSelect_lib
-   PRIVATE ftxui::screen
-           ftxui::dom
-           ftxui::component
+target_link_libraries(listToggle_lib
+   PRIVATE ftxui::dom
+   PRIVATE ftxui::component
 )
 # ---- Declare executable ----
 
-add_executable(listSelect_exe
+add_executable(listToggle_exe
    src/main.cpp
 )
-target_link_libraries(listSelect_exe
+target_link_libraries(listToggle_exe
    PRIVATE ftxui::component
 )
-set_property(TARGET listSelect_exe
+set_property(TARGET listToggle_exe
    PROPERTY OUTPUT_NAME lSel
 )
 
-target_compile_features(listSelect_exe PRIVATE
+target_compile_features(listToggle_exe PRIVATE
    cxx_std_20
 )
 
-target_link_libraries(listSelect_exe
-   PRIVATE listSelect_lib
-   #PUBLIC listSelect_lib
+target_link_libraries(listToggle_exe
+   PRIVATE listToggle_lib
 )
 

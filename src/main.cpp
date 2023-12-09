@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <getopt.h>
 #include <ftxui/component/screen_interactive.hpp>
-#include "ListSelect.hpp"
+#include "ListToggle.hpp"
 using namespace ftxui;
 using std::vector;
 using std::string;
@@ -79,18 +79,18 @@ vector<string> listDir(string path, bool showHidden) {
 }
 int main(int argc, char* argv[]) {
    auto screen = ScreenInteractive::FitComponent();
-   int negate = false;
+   int Negate = false;
    int append = false;
    int idx    = false;
    int hidden  = false; 
-   int max    = -1;
+   int Max    = -1;
    int size   = 10;
    char delim = '\n'; //*output* delimiter
    string outFile = "";
    string rootDir = "";
-   vector<string> myVec;
+   vector<string> Choices;
    struct option options[] = {
-      {"negate", no_argument,       &negate,  1 },
+      {"negate", no_argument,       &Negate,  1 },
       {"append", no_argument,       &append,  1 },
       {"idx",    no_argument,       &idx,     1 },
       {"hidden", no_argument,       &hidden,  1 },
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
    while((ret = getopt_long(argc, argv, "naihm:s:f:d:l::", options, NULL)) != -1) {
       switch(ret) {
          case 'n':
-            negate = 1;
+            Negate = 1;
             break;
          case 'a':
             append = 1;
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
             hidden = true;
             break;
          case 'm':
-            max = atoi(optarg);
+            Max = atoi(optarg);
             break;
          case 's':
             size = atoi(optarg);
@@ -148,19 +148,19 @@ int main(int argc, char* argv[]) {
       }
    }
    if(optind != argc)
-      myVec.assign(&argv[optind], &argv[argc]);
+      Choices.assign(&argv[optind], &argv[argc]);
    else if(!rootDir.empty())
-      myVec = listDir(rootDir, hidden);
+      Choices = listDir(rootDir, hidden);
    else 
-      myVec = stdIn();
+      Choices = stdIn();
    
    //save stdout & redirect stdout to stderr
    FILE* stdsve = fopen("/dev/stdout", "a");
    freopen("/dev/stderr", "w", stdout);
    
    //main loop
-   bool* states = nullptr;
-   auto container = listSelect(myVec, states, max, negate, size);
+   vector<bool> States;
+   auto container = ListToggle(&Choices, &States, Negate, Max);
    container = CatchEvent(container, [&](Event event) {
          if(event == Event::F1 || event == Event::Character('y')) {
             screen.Exit();
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
          }
          return false;
    });
-   screen.Loop(container);
+   screen.Loop(container | ftxui::size(HEIGHT, LESS_THAN, size) | border);
  
    
    ///process selections
@@ -179,18 +179,18 @@ int main(int argc, char* argv[]) {
       if(rootDir.back() != '/') {
          rootDir += '/';
       }
-      for(string &str : myVec) {
+      for(string &str : Choices) {
          str = rootDir + str;
       }
    }
    ///combine each selection with a trailing delim
    string msg;
-   for (int i = 0; i < myVec.size(); ++i) {
-      if(states[i]) {
+   for (int i = 0; i < Choices.size(); ++i) {
+      if(States[i]) {
          if(idx)
             msg += std::to_string(i) + delim;
          else
-            msg += myVec[i] + delim;
+            msg += Choices[i] + delim;
       }
    }
    
