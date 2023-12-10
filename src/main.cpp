@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
    while((ret = getopt_long(argc, argv, "naihm:s:f:d:l::", options, NULL)) != -1) {
       switch(ret) {
          case 'n':
-            Negate = 1;
+            Negate = true;
             break;
          case 'a':
             append = 1;
@@ -118,6 +118,7 @@ int main(int argc, char* argv[]) {
             hidden = true;
             break;
          case 'm':
+            //Max = new int(atoi(optarg));
             Max = atoi(optarg);
             break;
          case 's':
@@ -160,7 +161,12 @@ int main(int argc, char* argv[]) {
    
    //main loop
    vector<bool> States;
-   auto container = ListToggle(&Choices, &States, Negate, Max);
+   Component container;
+   if(Max == -1)
+      container = ListToggle(&Choices, &States, Negate, nullptr);
+   else
+      container = ListToggle(&Choices, &States, Negate, &Max);
+
    container = CatchEvent(container, [&](Event event) {
          if(event == Event::F1 || event == Event::Character('y')) {
             screen.Exit();
@@ -179,8 +185,7 @@ int main(int argc, char* argv[]) {
       if(rootDir.back() != '/') {
          rootDir += '/';
       }
-      for(string &str : Choices) {
-         str = rootDir + str;
+      for(string &str : Choices) { str = rootDir + str;
       }
    }
    ///combine each selection with a trailing delim
@@ -201,7 +206,6 @@ int main(int argc, char* argv[]) {
       msg.pop_back();
    } 
    */
-   
    ///output to stdsve(aka stdout)
    std::fputs(msg.c_str(), stdsve);
    ///output to outFile (if given)

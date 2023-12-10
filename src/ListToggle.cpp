@@ -1,56 +1,93 @@
 #include "ListToggle.hpp"
+#include<fstream>
+                     
 using namespace ftxui;
+
 using std::vector;
 using std::string;
+//Significant portions of BooleanItem were copied from the ftxui code
+//base (files: src/ftxui/component/{menu,checkbox}.cpp)
+Component BooleanItem(vector<bool>* states, string* label, int idx) {
+class Impl : public ComponentBase {
+   private:
+      vector<bool>* States;
+      string *Label;
+      
+      const int Idx;
+   public:
+      Impl(vector<bool>* states, string* label, int idx) 
+      :  States(states), 
+         Label(label), 
+         Idx(idx) {}
+      Element Render() override {
+         string retLabel = (Active() ? ">" : " ");
+         retLabel += (States->at(Idx) ? ">" : " " ) + *Label;
+         Element retElem = text(std::move(retLabel));
+         if(Focused()) {
+            retElem |= inverted;
+         }
+         if(Active()) {
+            retElem |= bold;
+         }
+         const bool is_focused = Focused();
+         const bool is_active = Active();
+         auto focus_management = is_focused ? focus : is_active ? ftxui::select : nothing;
+         return retElem | focus_management | reflect(box_);
+      }
+      bool OnEvent(Event event) override {
+         if(!Focused() || !Active()) {
+            return false;
+         }
+         if(event == Event::Character(' ') || event == Event::Return) {
+            States->at(Idx) = !States->at(Idx);
+            return true;
+         }
+         return false;
+      }
+      bool Focusable() const final { return true; };
+      Box box_;
+};
+   return Make<Impl>(states, label, idx);
+}
 
-Component ListToggle(vector<string>* choices, vector<bool>* states, bool initState, int max) {
+Component ListToggle(vector<string>* choices, vector<bool>* states, bool initState, int* max) {
 class Impl : public ComponentBase {
    private:
       vector<bool>*   States;
       vector<string>* Choices;
-      bool InitState;
-      int  Max = -1;
+      bool InitState = false;
+      int* Max = nullptr;
       
-      //this nonsense is temporary until missing Checkbox(CheckboxOption) func call
-      //is fixed
-      bool*  StatesInternal = nullptr;
-      
-      int    Selected = 0;
-      Component List = Container::Vertical({}, &Selected);
+      Component List = Container::Vertical({});
 
       void remakeList() {
          List->DetachAllChildren();
-         delete [] StatesInternal;
+         States->clear();
          States->resize(Choices->size(), InitState);
-         StatesInternal = new bool[Choices->size()];
-         List = Container::Vertical({}, &Selected);
-         bool* stateInternal = &StatesInternal[0];
+         int i = 0;
          for(auto &choice : *Choices) {
-            *stateInternal = InitState;
-            List->Add(Checkbox(choice, stateInternal++));
+            List->Add(BooleanItem(States, &choice, i++));
          }
       }
    public:
-      Impl(vector<string>* &choices, vector<bool>* &states, bool initState, int max) 
-       : Choices(choices), States(states) {
-         Max = max;
+      Impl(vector<string>* &choices, vector<bool>* &states, bool initState, int* max) 
+       : Choices(choices), 
+         States(states), 
+         Max(max) {
          InitState = initState;
-         if(Max != -1)
-            Max = Max > Choices->size() ? Choices->size() : Max;
          remakeList();
          Add(List);
       };
       Element Render() override {
-         return vbox(ChildAt(0)->Render() | vscroll_indicator | frame);
+         return vbox(List->Render() | vscroll_indicator | frame);
       }
       bool OnEvent(Event event) override {
          if(!Focused() || !ActiveChild()) {
             return false;
          }          
-         if(event == Event::Return) {
-            States->at(Selected) = !States->at(Selected);
-            StatesInternal[Selected] = States->at(Selected);
-            if(Max == -1)
+         if(event == Event::Character(' ') || event == Event::Return) {
+            List->OnEvent(event);
+            if(!Max )
                return true;
             int numSelected = 0;
             for(bool item : *States) {
@@ -58,12 +95,11 @@ class Impl : public ComponentBase {
                   numSelected++;
                }
             }
-            if(numSelected == Max) {
+            if(numSelected == *Max || numSelected == Choices->size()) {
                Parent()->OnEvent(Event::F1);
             }
             return true;
-         }          
-         if(ActiveChild()->OnEvent(event)) { //standard handling
+         } else if(List->OnEvent(event)) { //standard handling
             return true;
          } else {
             return false; //not reached
