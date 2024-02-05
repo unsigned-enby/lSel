@@ -14,7 +14,7 @@ make -j$(nproc)
 from the project's root directory.
 Optionally, you may use: 
    - `-DSYSTEM_FTXUI=1` to use prebuilt/installed ftxui libraries.
-   - `-DLSEL_STATIC=1` to create a static binary. However, please note that 
+   - `-DSTATIC_BUILD=1` to create a static binary. However, please note that 
      the TUI library FTXUI will be statically compiled either way.
 
 ## Install

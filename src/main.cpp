@@ -54,7 +54,6 @@ char expand(char* str) {
 vector<string> stdIn() {
    string str;
    vector<string> retVec;
-   std::cerr << "Reading args from stdin...\n";
    while(getline(std::cin, str)) {
       retVec.push_back(str);
    }
@@ -71,8 +70,13 @@ vector<string> listDir(string path, bool showHidden) {
    const std::filesystem::path dir(path);
    for(const auto &dir_entry : std::filesystem::directory_iterator(dir)) {
       retVec.push_back(dir_entry.path().filename().string());
-      if(!showHidden && retVec.back()[0] == '.')
+      if(!showHidden && retVec.back()[0] == '.') {
          retVec.pop_back();
+         continue;
+      }
+      if(dir_entry.is_directory()) {
+         retVec.back() += "/";
+      }
    }
    std::sort(retVec.begin(), retVec.end());
    return retVec;
@@ -82,8 +86,8 @@ int main(int argc, char* argv[]) {
    int Negate = false;
    int append = false;
    int idx    = false;
-   int hidden  = false; 
-   int Max    = -1;
+   int hidden = false; 
+   int Max    = 0;
    int size   = 10;
    char delim = '\n'; //*output* delimiter
    string outFile = "";
@@ -161,12 +165,7 @@ int main(int argc, char* argv[]) {
    
    //main loop
    vector<bool> States;
-   Component container;
-   if(Max == -1)
-      container = ListToggle(&Choices, &States, Negate, nullptr);
-   else
-      container = ListToggle(&Choices, &States, Negate, &Max);
-
+   Component container = ListToggle(&Choices, &States, Negate, Max);
    container = CatchEvent(container, [&](Event event) {
          if(event == Event::F1 || event == Event::Character('y')) {
             screen.Exit();
@@ -199,13 +198,12 @@ int main(int argc, char* argv[]) {
       }
    }
    
-   /* 
    ///strip final delim if !'\n' (if it's a newline, it
    ///is likely preferable to keep it)
    if(delim != '\n') {
       msg.pop_back();
    } 
-   */
+   
    ///output to stdsve(aka stdout)
    std::fputs(msg.c_str(), stdsve);
    ///output to outFile (if given)

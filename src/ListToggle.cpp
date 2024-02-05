@@ -20,8 +20,10 @@ class Impl : public ComponentBase {
          Label(label), 
          Idx(idx) {}
       Element Render() override {
-         string retLabel = (Active() ? ">" : " ");
-         retLabel += (States->at(Idx) ? ">" : " " ) + *Label;
+         string retLabel;
+         retLabel += (Active() ? ">" : " ");
+         retLabel += (States->at(Idx) ? ">" : " " );
+         retLabel += *Label;
          Element retElem = text(std::move(retLabel));
          if(Focused()) {
             retElem |= inverted;
@@ -50,13 +52,13 @@ class Impl : public ComponentBase {
    return Make<Impl>(states, label, idx);
 }
 
-Component ListToggle(vector<string>* choices, vector<bool>* states, bool initState, int* max) {
+Component ListToggle(vector<string>* choices, vector<bool>* states, bool initState, int maxLimit) {
 class Impl : public ComponentBase {
    private:
       vector<bool>*   States;
       vector<string>* Choices;
       bool InitState = false;
-      int* Max = nullptr;
+      int  MaxLimit  = false;
       
       Component List = Container::Vertical({});
 
@@ -70,11 +72,11 @@ class Impl : public ComponentBase {
          }
       }
    public:
-      Impl(vector<string>* &choices, vector<bool>* &states, bool initState, int* max) 
+      Impl(vector<string>* &choices, vector<bool>* &states, bool initState, int maxLimit) 
        : Choices(choices), 
          States(states), 
-         Max(max) {
-         InitState = initState;
+         MaxLimit(maxLimit),
+         InitState(initState) {
          remakeList();
          Add(List);
       };
@@ -87,16 +89,15 @@ class Impl : public ComponentBase {
          }          
          if(event == Event::Character(' ') || event == Event::Return) {
             List->OnEvent(event);
-            if(!Max )
+            if(!MaxLimit)
                return true;
             int numSelected = 0;
-            for(bool item : *States) {
+            for(bool item : *States)
                if(item != InitState) {
                   numSelected++;
                }
-            }
-            if(numSelected == *Max || numSelected == Choices->size()) {
-               Parent()->OnEvent(Event::F1);
+            if(numSelected == MaxLimit || numSelected == Choices->size()) {
+               Parent()->OnEvent(Event::F1); //tell parent to quit
             }
             return true;
          } else if(List->OnEvent(event)) { //standard handling
@@ -107,5 +108,5 @@ class Impl : public ComponentBase {
       }
       bool Focusable() const override {return true;}
 };
-   return Make<Impl>(choices, states, initState, max);
+   return Make<Impl>(choices, states, initState, maxLimit);
 }

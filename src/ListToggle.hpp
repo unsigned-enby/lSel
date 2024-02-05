@@ -5,6 +5,6 @@
 ftxui::Component ListToggle(std::vector<std::string>* choices,
                             std::vector<bool>*        states,
                             bool initState = false,
-                            int* max = nullptr);
+                            int  maxLimit  = false);
 
 #endif

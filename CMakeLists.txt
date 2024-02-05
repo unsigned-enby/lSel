@@ -8,7 +8,7 @@ project(
     HOMEPAGE_URL "https://example.com/"
     LANGUAGES CXX
 )
-option(LSEL_STATIC "Create a static binary" OFF)
+option(STATIC_BUILD "Create a static binary" OFF)
 option(SYSTEM_FTXUI "Use ftxui libraries found on system" OFF)
 
 
@@ -43,7 +43,7 @@ target_include_directories(
 )
 
 target_compile_features(listToggle_lib PUBLIC cxx_std_20)
-if(LSEL_STATIC)
+if(STATIC_BUILD)
    set(CMAKE_CXX_FLAGS "-static")
 endif()
 
