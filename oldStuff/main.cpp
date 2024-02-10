@@ -70,41 +70,39 @@ vector<string> listDir(string path, bool showHidden) {
    const std::filesystem::path dir(path);
    for(const auto &dir_entry : std::filesystem::directory_iterator(dir)) {
       retVec.push_back(dir_entry.path().filename().string());
-      if(!showHidden && retVec.back()[0] == '.') {
+      if(!showHidden && retVec.back()[0] == '.')
          retVec.pop_back();
-         continue;
-      }
-      if(dir_entry.is_directory()) {
-         retVec.back() += "/";
-      }
    }
    std::sort(retVec.begin(), retVec.end());
    return retVec;
 }
-void addRootDir(string* rootDir, vector<string>* Choices) {
-   if(rootDir->back() != '/') {
-      *rootDir += '/';
+void addRootToPath(vector<string> &Choices, string rootDir) {
+   if(rootDir.back() != '/') {
+      rootDir += '/';
    }
-   for(string &str : *Choices) { 
-      str = *rootDir + str;
+   for(string &str : Choices) { 
+      str = rootDir + str;
    }
 }
-string makeMsg(vector<string>* Choices, vector<bool>* States, char delim, bool idx) {
+string makeMsg(vector<string> &Choices, vector<bool> &States, char delim, bool idx) {
    string msg;
-   for (int i = 0; i < Choices->size(); ++i) {
-      if(States->at(i)) {
-         idx ?
-            msg += std::to_string(i) + delim:
-            msg += Choices->at(i)    + delim;
+   for (int i = 0; i < Choices.size(); ++i) {
+      if(States[i]) {
+         if(idx)
+            msg += std::to_string(i) + delim;
+         else
+            msg += Choices[i] + delim;
       }
    }
-   //strip final delim if !'\n' (if it's a newline, it
-   //is likely preferable to keep it)
+   /* 
+   ///strip final delim if !'\n' (if it's a newline, it
+   ///is likely preferable to keep it)
    if(delim != '\n') {
       msg.pop_back();
    } 
+   */
    return std::move(msg);
-};
+}
 int main(int argc, char* argv[]) {
    auto screen = ScreenInteractive::FitComponent();
    int Negate = false;
@@ -201,22 +199,19 @@ int main(int argc, char* argv[]) {
  
    
    ///process selections
-   
-   ///Append '/' to path (if needed) and 
-   ///prepend path to each selection if path is not empty
    if(!rootDir.empty() && !idx) {
-      addRootDir(&rootDir, &Choices);
+      addRootToPath(Choices, rootDir);
    }
-   ///combine each selection along with a trailing delim
-   string msg = makeMsg(&Choices, &States, delim, idx);
+   ///combine each selection with a trailing delim
+   string msg = makeMsg(Choices, States, delim, idx);
    
    ///output to stdsve(aka stdout)
    std::fputs(msg.c_str(), stdsve);
+
    ///output to outFile (if given)
    if(!outFile.empty()) {
-      if(append)
-         freopen(outFile.c_str(), "a", stdsve);
-      else
+      append ?
+         freopen(outFile.c_str(), "a", stdsve) :
          freopen(outFile.c_str(), "w", stdsve);
       std::fputs(msg.c_str(), stdsve);
    }
