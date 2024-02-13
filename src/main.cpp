@@ -66,20 +66,24 @@ vector<string> stdIn() {
    return retVec;
 }
 vector<string> listDir(string path, bool showHidden) {
-   vector<string> retVec;
+   vector<string> dirs;
+   vector<string> files;
    const std::filesystem::path dir(path);
    for(const auto &dir_entry : std::filesystem::directory_iterator(dir)) {
-      retVec.push_back(dir_entry.path().filename().string());
-      if(!showHidden && retVec.back()[0] == '.') {
-         retVec.pop_back();
+      string str = dir_entry.path().filename().string();
+      if(!showHidden && str[0] == '.') {
          continue;
       }
       if(dir_entry.is_directory()) {
-         retVec.back() += "/";
+         dirs.push_back(str + "/");
+      } else {
+         files.push_back(str);
       }
    }
-   std::sort(retVec.begin(), retVec.end());
-   return retVec;
+   std::sort(dirs.begin(), dirs.end());
+   std::sort(files.begin(), files.end());
+   dirs.insert(dirs.end(), files.begin(), files.end());
+   return dirs;
 }
 void addRootDir(string* rootDir, vector<string>* Choices) {
    if(rootDir->back() != '/') {
