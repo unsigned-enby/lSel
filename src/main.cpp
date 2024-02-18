@@ -20,6 +20,7 @@ void Help() {
              << "                    for the list of possible choices. The path will be prepended\n"
              << "                    to the selected items.\n"
              << " -[-h]idden       : when listing files, list all files. including those starting with '.'\n"
+             << " -[-q]uote        : place (double) quote around items\n"
              << " -[-m]ax   <max>  : automatically exit after making <max> selections.\n"
              << " -[-s]ize  <size> : Display no more than <size> lines at a time (default is 10).\n"
              << " -[-d]elim <delim>: Use <delim> as the output delimiter (default is '\\n')\n"
@@ -57,7 +58,6 @@ vector<string> stdIn() {
    while(getline(std::cin, str)) {
       retVec.push_back(str);
    }
-   //TODO: account for windows
 #if defined(_WIN32)
    freopen("CON", "rw", stdin);
 #else
@@ -65,6 +65,7 @@ vector<string> stdIn() {
 #endif
    return retVec;
 }
+//TODO: use an actual list
 vector<string> listDir(string path, bool showHidden) {
    vector<string> dirs;
    vector<string> files;
@@ -93,13 +94,18 @@ void addRootDir(string* rootDir, vector<string>* Choices) {
       str = *rootDir + str;
    }
 }
-string makeMsg(vector<string>* Choices, vector<bool>* States, char delim, bool idx) {
+string makeMsg(vector<string>* Choices, vector<bool>* States, char delim, bool idx, bool quote) {
    string msg;
    for (int i = 0; i < Choices->size(); ++i) {
+      string str;
       if(States->at(i)) {
          idx ?
-            msg += std::to_string(i) + delim:
-            msg += Choices->at(i)    + delim;
+            str = std::to_string(i):
+            str = Choices->at(i);
+         quote ?
+            msg += '"' + str + '"':
+            msg += str;
+         msg += delim;
       }
    }
    //strip final delim if !'\n' (if it's a newline, it
@@ -115,6 +121,7 @@ int main(int argc, char* argv[]) {
    int append = false;
    int idx    = false;
    int hidden = false; 
+   int quote  = false;
    int Max    = 0;
    int size   = 10;
    char delim = '\n'; //*output* delimiter
@@ -126,6 +133,7 @@ int main(int argc, char* argv[]) {
       {"append", no_argument,       &append,  1 },
       {"idx",    no_argument,       &idx,     1 },
       {"hidden", no_argument,       &hidden,  1 },
+      {"quote",  no_argument,       &quote,   1 },
       {"max",    required_argument, nullptr, 'm'},
       {"size",   required_argument, nullptr, 's'},
       {"file",   required_argument, nullptr, 'f'},
@@ -135,7 +143,7 @@ int main(int argc, char* argv[]) {
       {0, 0, 0, 0}
    };
    int ret;
-   while((ret = getopt_long(argc, argv, "naihm:s:f:d:l::", options, NULL)) != -1) {
+   while((ret = getopt_long(argc, argv, "naihqm:s:f:d:l::", options, NULL)) != -1) {
       switch(ret) {
          case 'n':
             Negate = true;
@@ -148,6 +156,9 @@ int main(int argc, char* argv[]) {
             break;   //         not the selections themselves
          case 'h':
             hidden = true;
+            break;
+         case 'q':
+            quote  = true;
             break;
          case 'm':
             //Max = new int(atoi(optarg));
@@ -212,7 +223,7 @@ int main(int argc, char* argv[]) {
       addRootDir(&rootDir, &Choices);
    }
    ///combine each selection along with a trailing delim
-   string msg = makeMsg(&Choices, &States, delim, idx);
+   string msg = makeMsg(&Choices, &States, delim, idx, quote);
    
    ///output to stdsve(aka stdout)
    std::fputs(msg.c_str(), stdsve);
