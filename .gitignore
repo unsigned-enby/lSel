@@ -1,3 +1,4 @@
 /build
 /.cache
-./oldStuff
+/oldStuff
+/compile_commands.json

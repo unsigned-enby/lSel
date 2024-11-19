@@ -2,7 +2,7 @@
 #define LIST_SEL_H
 #include <ftxui/component/component.hpp>
 
-ftxui::Component ListToggle(std::vector<std::string>* items,
+ftxui::Component ListToggle(std::vector<std::string>* choices,
                             std::vector<bool>*        states,
                             bool initState = false,
                             int  maxLimit  = false);

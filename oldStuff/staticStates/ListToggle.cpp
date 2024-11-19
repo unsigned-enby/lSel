@@ -1,4 +1,5 @@
 #include "ListToggle.hpp"
+#include<fstream>
                      
 using namespace ftxui;
 
@@ -6,16 +7,16 @@ using std::vector;
 using std::string;
 //Significant portions of BooleanItem were copied from the ftxui code
 //base (files: src/ftxui/component/{menu,checkbox}.cpp)
-class BooleanItem : public ComponentBase {
+//Component BooleanItem(vector<bool>* states, string* label, int idx) {
+class BooleanItemImpl : public ComponentBase {
+   friend class ListToggleImpl;
    private:
+      static vector<bool>* States;
       string *Item;
-      
-      vector<bool> *States;
-      const int Idx; //NOLINT
+      const int Idx;
    public:
-      BooleanItem(vector<bool>* states, string* label, int idx) 
-      :  States(states), 
-         Item(label), 
+      BooleanItemImpl(string* label, int idx) 
+      :  Item(label), 
          Idx(idx) {}
       Element Render() override {
          string retLabel;
@@ -47,10 +48,14 @@ class BooleanItem : public ComponentBase {
       bool Focusable() const final { return true; };
       Box box_;
 };
-
+//   return Make<Impl>(states, label, idx);
+//}
+Component BooleanItem(string* item, int idx) {
+   return Make<BooleanItemImpl>(item, idx);
+}
 class ListToggleImpl : public ComponentBase {
    private:
-      vector<bool>*   States = nullptr;
+      vector<bool>*   Statez = nullptr;
       vector<string>* Items  = nullptr;
       bool InitState = false;
       int  MaxLimit  = false;
@@ -59,19 +64,20 @@ class ListToggleImpl : public ComponentBase {
 
       void remakeList() {
          List->DetachAllChildren();
-         States->clear();
-         States->resize(Items->size(), InitState);
+         Statez->clear();
+         Statez->resize(Items->size(), InitState);
          int i = 0;
          for(auto &choice : *Items) {
-            List->Add(Make<BooleanItem>(States, &choice, i++));
+            List->Add(BooleanItem(&choice, i++));
          }
       }
    public:
       ListToggleImpl(vector<string>* items, vector<bool>* states, bool initState, int maxLimit) 
        : Items(items), 
-         States(states), 
+         Statez(states), 
          MaxLimit(maxLimit),
          InitState(initState) {
+         BooleanItemImpl::States = states;
          remakeList();
          Add(List);
       };
@@ -84,15 +90,13 @@ class ListToggleImpl : public ComponentBase {
          }          
          if(event == Event::Character(' ') || event == Event::Return) {
             List->OnEvent(event);
-            if(!MaxLimit) {
+            if(!MaxLimit)
                return true;
-            }
             int numSelected = 0;
-            for(bool item : *States) {
+            for(bool item : *Statez)
                if(item != InitState) {
                   numSelected++;
                }
-            }
             if(numSelected == MaxLimit || numSelected == Items->size()) {
                Parent()->OnEvent(Event::F1); //tell parent to quit
             }
@@ -105,6 +109,7 @@ class ListToggleImpl : public ComponentBase {
       }
       bool Focusable() const override {return true;}
 };
+
 Component ListToggle(vector<string>* items, vector<bool>* states, bool initState, int maxLimit) {
    return Make<ListToggleImpl>(items, states, initState, maxLimit);
 }
